@@ -16,12 +16,8 @@ class Car(object):
         return self.make, self.model
     
     def calculate_rental_price(self, days):
-        if type(days) == int:
-            total = days*self.price_per_day 
-            print(total) 
-            return total
-        else:
-            print("Error! Please enter integer values only.")
+        total = days*self.price_per_day  
+        return total
 
 # Create child classes for each type of car. 
 class Petrol(Car):

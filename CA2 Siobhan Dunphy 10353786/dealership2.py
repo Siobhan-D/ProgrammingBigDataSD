@@ -16,26 +16,51 @@ class Dealership(object):
         self.dealership_name = dealership_name
         #self.total_cars = 0
         self.total_available = 0
-        self.available_cars = []
+        self.petrol_cars = []
+        self.electric_cars = []
+        self.diesel_cars = []
+        self.hybrid_cars = []
         self.rented_cars = []
         self.cars = ['petrol', 'diesel', 'electric', 'hybrid']
     
     def check_total_cars_available(self):
-        self.total_available = 0
-        for car in self.available_cars:
-            self.total_available += 1
+        self.total_available = len(self.petrol_cars)+len(self.diesel_cars)_len(self.electric_cars)+len(self.hybrid_cars)
         return self.total_available
     
     def check_availability(self, car_type):
         # Go through the inventory and count the number of cars that are available of that type.
         car_type = car_type.lower()
-        count = 0
-        i=0
-        for car in self.available_cars:
-            if car.fuel_type == car_type:
-                count += 1
-        message =  "There are %s %s cars available\n." %(count, car_type) 
-        return count    
+        try:
+            if car_type = 'petrol':
+                available = len(self.petrol_cars)     
+            elif car_type = 'diesel':
+                available = len(self.diesel_cars)
+            elif car_type = 'electric':
+                available = len(self.electric_cars)
+            elif car_type = 'hybrid':
+                available = len(self.hybrid_cars
+            message = 'There are %s %s cars available.\n' %(available, car_type)
+        except:
+            message = 'Input error. Please try again'
+        return message
+    
+    def car_rental(self, car_type, num_cars, num_days):
+        car_type = car_type.lower()
+        num_available = self.check_availability(car_type)
+        if car_type = 'petrol':
+            if num_available>num_cars:
+                j=0
+                if j==num_cars:
+                    break
+                else:
+                    for car in self.petrol_cars:
+                        self.rented_cars.append(self.available_cars.pop(j))
+                        j+=1
+                    cost = car.calculate_rental_price(num_days)
+                message = 
+            
+            
+            cost = car.calculate_rental_price(num_days)
     
     def car_rental(self, car_type, num_cars, num_days):
         # Check availability of the desired car type and number of cars. Remove the cars from the list and add them to another list.

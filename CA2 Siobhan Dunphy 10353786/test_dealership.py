@@ -23,16 +23,20 @@ class Test_Dealership(unittest.TestCase):
         for i in range(8):
             self.dealer.available_cars.append(Hybrid('red', 'Toyota', 'Prius', 45.0))
     
+        # Rent one car so that return function can be tested.
         self.dealer.car_rental('petrol', 1, 2)
     
+    # Test the check_total_cars_available function
     def test_check_total_cars_available_returns_correct_result(self):
         result = self.dealer.check_total_cars_available()
         self.assertEqual(result, 39)
         
+    # Test the check_availability function    
     def test_check_availability_function_returns_correct_result(self):
         result = self.dealer.check_availability('electric')
         self.assertEqual(result, 4)
-        
+    
+    # Test the car_rental function.    
     def test_car_rental_function_returns_correct_result(self):
         result = self.dealer.car_rental('hybrid', 2, 2)
         self.assertEqual(result, "You have successfully rented 2 hybrid cars.\n\nTotal cost: 180.0 euro")
@@ -41,10 +45,11 @@ class Test_Dealership(unittest.TestCase):
         result = self.dealer.car_rental('electric', 8, 1)
         self.assertEqual(result, "Sorry, only 4 electric cars available. Please try again.")
         result = self.dealer.car_rental('motorcycle', 1, 8)
-        self.assertEqual(result, "Sorry, that car type is not available at this dealership.")
-        result = self.dealer.car_rental('petrol', 'three', 3)
-        self.assertEqual(result, "Error! Please enter integer values only.")
+        self.assertEqual(result, 'Sorry, that type of car is not available.')
+        result = self.dealer.car_rental('petrol', 3, 'three')
+        self.assertEqual(result, "Invalid input.")
 
+    # Test the return_car function.
     def test_car_return_function_returns_correct_result(self):
         result = self.dealer.car_return('hybrid', 8)
         self.assertEqual(result, "Sorry, we have no record of your car rental.")

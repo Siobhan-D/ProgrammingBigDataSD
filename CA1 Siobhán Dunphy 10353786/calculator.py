@@ -21,7 +21,7 @@ class Calculator:
         self.result = 0
         self.current = 0
         self.operator = 0
-        self.sign = 0
+        
     # Append the input numbers by clearing the current display and displaying the appended variables.
     def num_button(self, input):
         if self.current is 0:
@@ -33,19 +33,8 @@ class Calculator:
             display.delete(0,END) 
             display.insert(0,string = self.var2)
     
-    ####### A function is also required to take in negative numbers in the GUI.
-    def make_neg(self):      
-        if self.current is 0:
-            self.var1 = "-" + str(self.var1)
-            display.delete(0,END)
-            display.insert(0,string = self.var1)
-            self.sign = 1
-        else:
-            self.var2 = "-" + str(self.var2)
-            display.delete(0,END) 
-            display.insert(0,string = self.var2)
-            self.sign = 1
-            
+    ####### A function is also required to take in negative numbers in the GUI but is not yet written!
+    # def sign(self, input):      
     # Define methods for each mathematical operation.
     # 1. Add
     # 2. Subtract
@@ -172,7 +161,6 @@ sine = Button(frame, text = "sin", command = lambda: calc.set_op(6))
 cosine = Button(frame, text = "cos", command = lambda: calc.set_op(7))
 tangent = Button(frame, text = "tan", command = lambda: calc.set_op(8))
 log10 = Button(frame, text = "log", command = lambda: calc.set_op(9))
-neg = Button(frame, text = "(-)", command = lambda: calc.make_neg)
 
 equals = Button(frame, text = "=", command = calc.equate) # lambda not required since no parameters
 clear = Button(frame, text = "c", command = calc.clear)
@@ -192,7 +180,6 @@ b3.grid(row=3, column=2)
 b0.grid(row=4, column=0)
 
 b_decimal.grid(row=4, column=1)
-neg.grid(row=4, column=2)
 clear.grid(row=5, column=3)
 equals.grid(row=5, column=4)
 #plusminus.grid(row=4, column=2)
