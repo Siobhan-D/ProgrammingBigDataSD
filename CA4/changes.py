@@ -19,8 +19,6 @@ data = my_file.readlines()
 
 data = [line.strip() for line in open(changes_file, 'r')]
 
-print len(data)
-
 # Create string sep that consists of 72 hyphens
 sep = 72*'-'
 
@@ -28,22 +26,19 @@ sep = 72*'-'
 # Create a class to store the elements of each object
 class Commit(object):
     def __init__(self, revision=None, author=None, date_time=None, comment_line_length=None, 
-            type_of_changes=None, comment=None):
+            comment=None):
         self.revision = revision
         self.author = author
         self.date_time = date_time
         self.date = ""
         self.time = ""
         self.comment_line_length = comment_line_length
-        self.type_of_changes = type_of_changes
         self.changes = comment
 
     def to_dict(self):
-        return {'revision': self.revision,
-                'author': self.author,
+        return {'author': self.author,
                 'date': self.date,
-                'time': self.date,
-                'type of change': self.type_of_changes,
+                'time': self.time,
                 'changes': self.changes
                 }
     
@@ -51,7 +46,11 @@ class Commit(object):
         details = self.date_time.split(' ')
         self.date = details[0]
         self.time = details[1]
-        
+
+    # Function to convert changes to string type.
+    def convert_comments_to_string(self):
+        self.changes =  str(self.changes).strip('[]')
+
 index = 0
 current_commit = None
 commits = []
@@ -64,17 +63,22 @@ while True:
         current_commit.author = details[1].strip()
         current_commit.date_time = details[2].strip()
         current_commit.get_date_time()
-        print current_commit.time
-        print current_commit.date
         current_commit.comment_line_length = int(details[3].strip().split(' ')[0])
-        
         index = data.index(sep, index+1)
         current_commit.changes = data[index-current_commit.comment_line_length:index]
+        current_commit.convert_comments_to_string()
         
-        commits.append(current_commit)
+        # Skip uninteresting entries
+        if current_commit.author == '/OU=Domain Control Validated/CN=svn.company.net':
+            continue  
+        else:
+            commits.append(current_commit)
     except IndexError:
         break
         
 # Create data frame by converting each object in commit to a dict
 df = pd.DataFrame(commit.to_dict() for commit in commits)
+# Reorder the columns
+df=df[['author', 'date', 'time','changes']]
+# Print out the first 5 columns
 print df.head(5)
