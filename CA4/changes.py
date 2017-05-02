@@ -8,19 +8,16 @@
 # You will be required to submit your code via github along with all documentation and tests.
 
 import pandas as pd
+import matplotlib.pyplot as plt
+# library('ggplot2') # visualization
 
-# Open file and read in the lines.
-# 
-changes_file = 'changes_python.log'
-
-# Use strip to strip out spaces.
-my_file = open(changes_file, 'r')
-data = my_file.readlines()
-
-data = [line.strip() for line in open(changes_file, 'r')]
-
-# Create string sep that consists of 72 hyphens
-sep = 72*'-'
+def prep_file(my_file):
+    # Open file and read in the lines.
+    # my_file = open(my_file, 'r')
+    # data = my_file.readlines()
+    # Use strip to strip out spaces.
+    data = [line.strip() for line in open(my_file, 'r')]
+    return data
 
 # Search the document and break up into objects based on sep
 # Create a class to store the elements of each object
@@ -50,35 +47,64 @@ class Commit(object):
     # Function to convert changes to string type.
     def convert_comments_to_string(self):
         self.changes =  str(self.changes).strip('[]')
-
-index = 0
-current_commit = None
-commits = []
-
-while True:
-    try:
-        details = data[index+1].split('|')
-        current_commit = Commit()
-        current_commit.revision = details[0].strip()
-        current_commit.author = details[1].strip()
-        current_commit.date_time = details[2].strip()
-        current_commit.get_date_time()
-        current_commit.comment_line_length = int(details[3].strip().split(' ')[0])
-        index = data.index(sep, index+1)
-        current_commit.changes = data[index-current_commit.comment_line_length:index]
-        current_commit.convert_comments_to_string()
+    
+# Function to extract data from a log file containing a recorded of commits by different authors.
+def get_commits(data):
+    index = 0
+    current_commit = None
+    commits = []
+    # Create string sep that consists of 72 hyphens
+    sep = 72*'-'
+    while True:
+        try:
+            details = data[index+1].split('|')
+            current_commit = Commit()
+            current_commit.revision = details[0].strip()
+            current_commit.author = details[1].strip()
+            current_commit.date_time = details[2].strip()
+            current_commit.get_date_time()
+            current_commit.comment_line_length = int(details[3].strip().split(' ')[0])
+            index = data.index(sep, index+1)
+            current_commit.changes = data[index-current_commit.comment_line_length:index]
+            current_commit.convert_comments_to_string()
         
-        # Skip uninteresting entries
-        if current_commit.author == '/OU=Domain Control Validated/CN=svn.company.net':
-            continue  
-        else:
-            commits.append(current_commit)
-    except IndexError:
-        break
-        
-# Create data frame by converting each object in commit to a dict
+            # Skip uninteresting entries
+            if current_commit.author == '/OU=Domain Control Validated/CN=svn.company.net':
+                continue  
+            else:
+                # Add the current commit to the list of commit objects.
+                commits.append(current_commit)
+        except IndexError:
+            break
+    return commits
+
+# Create functions to analyse and plot the changes data.
+
+# Function to get a list of all authors.
+def get_authors(commits=[]):
+    authors = []
+    for commit in commits:
+        author = commit.author
+        if author in authors:
+            continue
+        else:    
+            authors.append(author)
+    print authors
+    return authors
+
+# Function to count the number of revisions per author.
+def count_revisions():
+    pass
+
+# Prepare changes_python.log file
+changes_file = prep_file('changes_python.log')
+# Extract relevant data from changes_file by create a list of commit objects and adding
+# them to a list called commits.
+commits = get_commits(changes_file)
+# Create data frame by converting each object in commit to a dict and adding it.
 df = pd.DataFrame(commit.to_dict() for commit in commits)
-# Reorder the columns
+# Reorder columns in the df
 df=df[['author', 'date', 'time','changes']]
-# Print out the first 5 columns
+# Check df was created properly by printing the first 5 columns
 print df.head(5)
+
