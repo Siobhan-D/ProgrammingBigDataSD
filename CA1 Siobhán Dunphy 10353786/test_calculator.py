@@ -1,21 +1,22 @@
+
 import unittest
 from calculator import Calculator
 
-# test the calculator functionality
+# test the calculator functionality with lists
 class TestCalculator(unittest.TestCase):
 
     def setUp(self):
         # declare instance of calculator
         self.calc = Calculator()
-
+        self.calc.numbers = [1,2,3,4]
     # this tests the add functionality
     def test_calculator_add_method_returns_correct_result(self):
-        result = self.calc.add(2, 2)
-        self.assertEqual(4, result)
-        result = self.calc.add(2,4)
-        self.assertEqual(6, result)
-        result = self.calc.add(2, -2)
+        result = self.calc.add(self.list)
+        self.assertEqual(10, result)
+        result = self.calc.add(nums = [-2,2,0])
         self.assertEqual(0, result)
+        result = self.calc.add(nums = [-4, -2])
+        self.assertEqual(-6, result)
     
     # this tests the subtract functionality
     def test_calculator_subtract_method_returns_correct_result(self):
