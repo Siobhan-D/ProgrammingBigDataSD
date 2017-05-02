@@ -27,11 +27,13 @@ sep = 72*'-'
 # Search the document and break up into objects based on sep
 # Create a class to store the elements of each object
 class Commit(object):
-    def __init__(self, revision=None, author=None, date=None, comment_line_length=None, 
+    def __init__(self, revision=None, author=None, date_time=None, comment_line_length=None, 
             type_of_changes=None, comment=None):
         self.revision = revision
         self.author = author
-        self.date = date
+        self.date_time = date_time
+        self.date = ""
+        self.time = ""
         self.comment_line_length = comment_line_length
         self.type_of_changes = type_of_changes
         self.changes = comment
@@ -40,9 +42,15 @@ class Commit(object):
         return {'revision': self.revision,
                 'author': self.author,
                 'date': self.date,
+                'time': self.date,
                 'type of change': self.type_of_changes,
                 'changes': self.changes
                 }
+    
+    def get_date_time(self):
+        details = self.date_time.split(' ')
+        self.date = details[0]
+        self.time = details[1]
         
 index = 0
 current_commit = None
@@ -54,7 +62,10 @@ while True:
         current_commit = Commit()
         current_commit.revision = details[0].strip()
         current_commit.author = details[1].strip()
-        current_commit.date = details[2].strip()
+        current_commit.date_time = details[2].strip()
+        current_commit.get_date_time()
+        print current_commit.time
+        print current_commit.date
         current_commit.comment_line_length = int(details[3].strip().split(' ')[0])
         
         index = data.index(sep, index+1)
@@ -63,8 +74,7 @@ while True:
         commits.append(current_commit)
     except IndexError:
         break
-
-print len(commits)
-# Create data frame
+        
+# Create data frame by converting each object in commit to a dict
 df = pd.DataFrame(commit.to_dict() for commit in commits)
-print df.head(20)
+print df.head(5)
