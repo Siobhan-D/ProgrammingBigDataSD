@@ -9,6 +9,10 @@
 
 import pandas as pd
 import matplotlib.pyplot as plt
+import seaborn as sns 
+import datetime
+
+
 # library('ggplot2') # visualization
 
 def prep_file(my_file):
@@ -27,23 +31,19 @@ class Commit(object):
         self.revision = revision
         self.author = author
         self.date_time = date_time
-        self.date = ""
-        self.time = ""
         self.comment_line_length = comment_line_length
         self.changes = comment
 
     def to_dict(self):
         return {'author': self.author,
-                'date': self.date,
-                'time': self.time,
+                'date_time': self.date_time,
                 'changes': self.changes
                 }
     
     def get_date_time(self):
         details = self.date_time.split(' ')
-        self.date = details[0]
-        self.time = details[1]
-
+        self.date_time = details[0] + ' ' + details[1]
+    
     # Function to convert changes to string type.
     def convert_comments_to_string(self):
         self.changes =  str(self.changes).strip('[]')
@@ -104,7 +104,22 @@ commits = get_commits(changes_file)
 # Create data frame by converting each object in commit to a dict and adding it.
 df = pd.DataFrame(commit.to_dict() for commit in commits)
 # Reorder columns in the df
-df=df[['author', 'date', 'time','changes']]
+df=df[['author', 'date_time', 'changes']]
+# Convert data and time to pandas datetime
+df['date_time'] = pd.to_datetime(df['date_time'], format="%Y-%m-%d %H:%M:%S")
 # Check df was created properly by printing the first 5 columns
 print df.head(5)
 
+# Count changes per author and plot. 
+# Look at time of day and number of commits for each author.
+# Plot time series of commits.
+# Look at days of the week.
+
+counts = df['author'].value_counts()
+
+# by_date = pd.DataFrame({'count' : df.groupby( [ "author", "date"] ).size()}).reset_index()
+# print by_date
+# 
+# for i, group in by_date.groupby('author'):
+#     plt.figure()
+#     group.plot(x='author', y='date')
