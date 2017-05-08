@@ -7,18 +7,18 @@
 # Your statistical analytics conclusions should be in a word document explaining in approximately 500 words the information that you have gleamed from the dataset.
 # You will be required to submit your code via github along with all documentation and tests.
 
+import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns 
-import datetime
+import datetime as dt
+import calendar
+from os import path
 
+sns.set(style="whitegrid")
 
 # library('ggplot2') # visualization
-
 def prep_file(my_file):
-    # Open file and read in the lines.
-    # my_file = open(my_file, 'r')
-    # data = my_file.readlines()
     # Use strip to strip out spaces.
     data = [line.strip() for line in open(my_file, 'r')]
     return data
@@ -44,11 +44,11 @@ class Commit(object):
         details = self.date_time.split(' ')
         self.date_time = details[0] + ' ' + details[1]
     
-    # Function to convert changes to string type.
+    # Function to convert changes to string type
     def convert_comments_to_string(self):
         self.changes =  str(self.changes).strip('[]')
     
-# Function to extract data from a log file containing a recorded of commits by different authors.
+# Function to extract data from log file containing records of commits by different authors
 def get_commits(data):
     index = 0
     current_commit = None
@@ -104,22 +104,69 @@ commits = get_commits(changes_file)
 # Create data frame by converting each object in commit to a dict and adding it.
 df = pd.DataFrame(commit.to_dict() for commit in commits)
 # Reorder columns in the df
-df=df[['author', 'date_time', 'changes']]
+df = df[['author', 'date_time', 'changes']]
 # Convert data and time to pandas datetime
 df['date_time'] = pd.to_datetime(df['date_time'], format="%Y-%m-%d %H:%M:%S")
+
 # Check df was created properly by printing the first 5 columns
-print df.head(5)
+# print(df.dtypes)
 
 # Count changes per author and plot. 
 # Look at time of day and number of commits for each author.
 # Plot time series of commits.
-# Look at days of the week.
+#Look at duration of dataframe - what time is included.
+# Look at days of the week?
+# Try group by month and group by day of the week?
+# Could calculate best performer by looking at average monthly output and calculating stats based on this.
+# counts = df['author'].value_counts()
 
+# Create additional columns with month
+df['month'] = df['date_time'].apply(lambda x: "%s" %(x.month))
+df['month'] = df['month'].apply(lambda x: calendar.month_abbr[int(x)])
+
+# print df.head(5)
+
+# Group and aggregate the data to get some meaningful insights.
+grouped = df.groupby(['author', 'month'])
+len(grouped)
+# for names,groups in grouped:
+#     print names
+#     print groups
+
+print(grouped.size())
+
+# Look at total commits per author
 counts = df['author'].value_counts()
+# Look at total commits per month
+months = df['month'].value_counts()
 
+# Make some exploratory plots
+# generate figure with axes
+plt.figure()
+commits_by_author = sns.countplot(x='author', data=df)
+commits_by_author.figure.savefig("commits_by_author.jpg")
+
+plt.figure()
+commits_by_month = sns.countplot(x='month', data=df)
+commits_by_month.figure.savefig("commits_by_month.jpg")
+
+plt.figure()
+commits_by_author_by_month = sns.countplot(x='author', hue='month', data=df)
+commits_by_author_by_month.figure.savefig("commits_by_author_by_month.jpg")
+
+
+# print(df.groupby(df['author'].count()))
+# print(df.groupby(df['date_time', 'author'].dt.month).size())
+# 
+# g = sns.factorplot(x="author", y="count", hue="month", data=df, size=6, kind="bar", palette="muted")
 # by_date = pd.DataFrame({'count' : df.groupby( [ "author", "date"] ).size()}).reset_index()
 # print by_date
 # 
 # for i, group in by_date.groupby('author'):
 #     plt.figure()
 #     group.plot(x='author', y='date')
+# if df['date_time'].dt.time() < dt.time(12):
+#     df['time of day'] = 'morning'
+# else:
+#     df['time of day'] = 'afternoon'
+# df['Hour'] = df['Timestamp'].apply(lambda x: "%d/%d" %(x.month, x.year))
