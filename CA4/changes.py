@@ -71,6 +71,10 @@ def get_commits(data):
             # Skip uninteresting entries
             if current_commit.author == '/OU=Domain Control Validated/CN=svn.company.net':
                 continue  
+            elif current_commit.author == 'ajon0002':
+                continue
+            elif current_commit.author == 'murari.krishnan':
+                continue
             else:
                 # Add the current commit to the list of commit objects.
                 commits.append(current_commit)
@@ -89,7 +93,6 @@ def get_authors(commits=[]):
             continue
         else:    
             authors.append(author)
-    print authors
     return authors
 
 # Function to count the number of revisions per author.
@@ -101,6 +104,8 @@ changes_file = prep_file('changes_python.log')
 # Extract relevant data from changes_file by create a list of commit objects and adding
 # them to a list called commits.
 commits = get_commits(changes_file)
+# Check the list of authors
+print(get_authors(commits))
 # Create data frame by converting each object in commit to a dict and adding it.
 df = pd.DataFrame(commit.to_dict() for commit in commits)
 # Reorder columns in the df
@@ -108,7 +113,8 @@ df = df[['author', 'date_time', 'changes']]
 # Convert data and time to pandas datetime
 df['date_time'] = pd.to_datetime(df['date_time'], format="%Y-%m-%d %H:%M:%S")
 
-# Check df was created properly by printing the first 5 columns
+# Check df was created properly by printing the first 5 columns, checking data types and viewing info
+# print(df.head(5))
 # print(df.dtypes)
 
 # Count changes per author and plot. 
@@ -127,13 +133,7 @@ df['month'] = df['month'].apply(lambda x: calendar.month_abbr[int(x)])
 # print df.head(5)
 
 # Group and aggregate the data to get some meaningful insights.
-grouped = df.groupby(['author', 'month'])
-len(grouped)
-# for names,groups in grouped:
-#     print names
-#     print groups
 
-print(grouped.size())
 
 # Look at total commits per author
 counts = df['author'].value_counts()
@@ -142,6 +142,19 @@ months = df['month'].value_counts()
 
 # Make some exploratory plots
 # generate figure with axes
+
+# Calculate average monthly commits per author
+monthly_df = pd.DataFrame({'count' : df.groupby(['author', 'month']).size()}).reset_index()
+print(monthly_df)
+author_monthly_avg = monthly_df.groupby(['author']).mean().reset_index(['author', 'mean'])
+print(author_monthly_avg)
+
+# Create a grouped bar chart of average monthly commits per author
+plt.figure()
+average_monthly = sns.barplot(x='author', y='count', data=author_monthly_avg)
+average_monthly.figure.savefig("average_monthly.jpg")
+
+
 plt.figure()
 commits_by_author = sns.countplot(x='author', data=df)
 commits_by_author.figure.savefig("commits_by_author.jpg")
@@ -157,8 +170,6 @@ commits_by_author_by_month.figure.savefig("commits_by_author_by_month.jpg")
 
 # print(df.groupby(df['author'].count()))
 # print(df.groupby(df['date_time', 'author'].dt.month).size())
-# 
-# g = sns.factorplot(x="author", y="count", hue="month", data=df, size=6, kind="bar", palette="muted")
 # by_date = pd.DataFrame({'count' : df.groupby( [ "author", "date"] ).size()}).reset_index()
 # print by_date
 # 
