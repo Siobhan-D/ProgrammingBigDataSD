@@ -33,13 +33,15 @@ class Commit(object):
 
     def to_dict(self):
         return {'author': self.author,
-                'date_time': self.date_time,
+                'date': self.date,
+                'time': self.time,
                 'changes': self.changes
                 }
     
     def get_date_time(self):
         details = self.date_time.split(' ')
-        self.date_time = details[0] + ' ' + details[1]
+        self.date = details[0] 
+        self.time = details[1]
     
     # Function to convert changes to string type
     def convert_comments_to_string(self):
@@ -92,23 +94,20 @@ def get_authors(commits=[]):
             authors.append(author)
     return authors
 
-# Function to count the number of revisions per author.
-def count_revisions():
-    pass
-
 # Prepare changes_python.log file
 changes_file = prep_file('changes_python.log')
 # Extract relevant data from changes_file by create a list of commit objects and adding
 # them to a list called commits.
 commits = get_commits(changes_file)
 # Check the list of authors
-print(get_authors(commits))
+# print(get_authors(commits))
 # Create data frame by converting each object in commit to a dict and adding it.
 df = pd.DataFrame(commit.to_dict() for commit in commits)
 # Reorder columns in the df
-df = df[['author', 'date_time', 'changes']]
+df = df[['author', 'date', 'time', 'changes']]
 # Convert data and time to pandas datetime
-df['date_time'] = pd.to_datetime(df['date_time'], format="%Y-%m-%d %H:%M:%S")
+df['date'] = pd.to_datetime(df['date'], format="%Y-%m-%d")
+df['time'] = pd.to_datetime(df['time'], format="%H:%M:%S")
 
 # Check df was created properly by printing the first 5 columns, checking data types and viewing info
 # print(df.head(5))
@@ -124,13 +123,13 @@ df['date_time'] = pd.to_datetime(df['date_time'], format="%Y-%m-%d %H:%M:%S")
 # counts = df['author'].value_counts()
 
 # Create additional columns with month
-df['month'] = df['date_time'].apply(lambda x: "%s" %(x.month))
+df['month'] = df['date'].apply(lambda x: "%s" %(x.month))
 df['month'] = df['month'].apply(lambda x: calendar.month_abbr[int(x)])
 
 # Create additional column with days of the week
-df['day'] = df['date_time'].apply(lambda x: "%s" %(x.dayofweek))
+df['day'] = df['date'].apply(lambda x: "%s" %(x.dayofweek))
 df['day'] = df['day'].apply(lambda x: calendar.day_abbr[int(x)])
-print(df.head(5))
+
 # Group and aggregate the data to get some meaningful insights.
 # Look at total commits per author
 counts = df['author'].value_counts()
@@ -139,18 +138,16 @@ months = df['month'].value_counts()
 
 # Do some exploratory analysis of the data
 # Start by looking at monthly patterns
-# Calculate average monthly commits per author
+# Calculate average monthly and daily commits per author
 monthly_df = pd.DataFrame({'count' : df.groupby(['author', 'month']).size()}).reset_index()
-# print(monthly_df)
-# author_monthly_avg = monthly_df.groupby(['author']).mean().reset_index(['author', 'mean'])
+daily_df = pd.DataFrame({'count' : df.groupby(['author', 'day']).size()}).reset_index()
+
+# Calculate monthly average commits and SD per author
 author_monthly_avg = monthly_df.groupby(['author']).agg(['mean','std']).reset_index(['author', 'mean'])
 # print(author_monthly_avg)
 
 # Convert dataframe to csv to do additional stats if required
 author_monthly_avg.to_csv('author_monthly_avg.csv')
-
-daily_df = pd.DataFrame({'count' : df.groupby(['author', 'day']).size()}).reset_index()
-print(daily_df)
 
 # set background style for plots
 sns.set(style="whitegrid")
@@ -158,7 +155,6 @@ sns.set(style="whitegrid")
 # Create a grouped bar chart of average monthly commits per author
 plt.figure()
 average_monthly_commits = sns.barplot(x='author', y='count', data=monthly_df, capsize=.2, errwidth = .8)
-# average_monthly_commits.set_xticklabels(visible=True, rotation=45)
 average_monthly_commits.figure.savefig("average_monthly.jpg")
 
 # Create a grouped bar chart of average monthly commits per author
@@ -170,8 +166,9 @@ plt.figure()
 commits_by_month = sns.countplot(x='month', data=df)
 commits_by_month.figure.savefig("commits_by_month.jpg")
 
-#plt.figure()
 # commits_by_author_by_month = sns.countplot(x='author', hue='month', data=df)
+# commits_by_author_by_month = sns.countplot(x='author', hue='month', data=df)
+# Create a factorplot of total commits per month for each author
 commits_by_author_by_month = sns.factorplot(x='month', 
         y='count', 
         col = 'author', 
@@ -181,26 +178,57 @@ commits_by_author_by_month = sns.factorplot(x='month',
         order=['Jul','Aug','Sep', 'Oct','Nov'], 
         size = 2)
 commits_by_author_by_month.set_xlabels('')
-commits_by_author_by_month.set_ylabels('mean (per month)')
+commits_by_author_by_month.set_ylabels('count (per month)')
 for ax in commits_by_author_by_month.axes:
     plt.setp(ax.get_xticklabels(), visible=True, rotation=45)
-
 plt.subplots_adjust(hspace=1)
-
 commits_by_author_by_month.savefig("commits_by_author_by_month.jpg")
 
-# Next look at weekly patterns
+# Next look at daily patterns
+# Create a grouped bar chart of average daily commits per author
+plt.figure()
+average_daily_commits = sns.barplot(x='author', y='count', data=daily_df, capsize=.2, errwidth = .8)
+average_daily_commits.figure.savefig("average_daily.jpg")
 
-# print(df.groupby(df['author'].count()))
-# print(df.groupby(df['date_time', 'author'].dt.month).size())
-# by_date = pd.DataFrame({'count' : df.groupby( [ "author", "date"] ).size()}).reset_index()
-# print by_date
-# 
-# for i, group in by_date.groupby('author'):
-#     plt.figure()
-#     group.plot(x='author', y='date')
-# if df['date_time'].dt.time() < dt.time(12):
-#     df['time of day'] = 'morning'
-# else:
-#     df['time of day'] = 'afternoon'
-# df['Hour'] = df['Timestamp'].apply(lambda x: "%d/%d" %(x.month, x.year))
+plt.figure()
+commits_by_weekday = sns.countplot(x='day', data=df)
+commits_by_weekday.figure.savefig("commits_by_weekday.jpg")
+
+# Create a dataframe grouped by author and date
+dates_df = pd.DataFrame({'count' : df.groupby(['author','date']).size()}).reset_index()
+daily_avg = dates_df.groupby(['author']).agg(['mean','std']).reset_index(['author', 'mean'])
+
+# Add a column for day of the week
+dates_df['day']= dates_df['date'].apply(lambda x: "%s" %(x.dayofweek))
+dates_df['day'] = dates_df['day'].apply(lambda x: calendar.day_abbr[int(x)])
+
+# Calculate averages based on day of the week
+author_weekday_avg = pd.DataFrame(dates_df.groupby(['author','day'])['count'].agg(['mean', 'std'])).reset_index()
+
+# Convert dataframe to csv 
+author_weekday_avg.to_csv('author_weekday_avg.csv')
+
+# Plot mean values based on day of the week for each author
+avg_commits_by_author_by_weekday = sns.factorplot(x='day', 
+        y='mean', 
+        col = 'author', 
+        col_wrap=3, 
+        data=author_weekday_avg, 
+        kind='bar', 
+        order = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'],
+        size = 2)
+avg_commits_by_author_by_weekday.set_xlabels('')
+avg_commits_by_author_by_weekday.set_ylabels('average (day of week)')
+for ax in avg_commits_by_author_by_weekday.axes:
+    plt.setp(ax.get_xticklabels(), visible=True, rotation=45)
+plt.subplots_adjust(hspace=1)
+avg_commits_by_author_by_weekday.savefig("avg_commits_by_author_by_weekday.jpg")
+
+# Get information on time of day
+for col in df:
+    if df['time'] < dt.time(12):
+         df['time of day'] = 'AM'
+    else:
+        df['time of day'] = 'PM'
+
+print(df.head(5))
