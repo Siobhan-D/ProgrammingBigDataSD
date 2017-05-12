@@ -26,15 +26,15 @@ def get_commits(data):
             break
     return commits
 
-# Added in class and may need debugging.
-def get_authors():
-    authors = {}
-    for commit in commits:
-        author = commit['author']
-        if author not in authors:
-            author = 
-            authors.append(author]
-            authors[author] = 1
+# Added in class and needs debugging.
+# def get_authors():
+#     authors = {}
+#     for commit in commits:
+#         author = commit['author']
+#         if author not in authors:
+#             author = 
+#             authors.append(author]
+#             authors[author] = 1
     
     return authors
 
