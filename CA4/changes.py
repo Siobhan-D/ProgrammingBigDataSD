@@ -13,9 +13,6 @@ import matplotlib.pyplot as plt
 import seaborn as sns 
 import datetime as dt
 import calendar
-from os import path
-
-sns.set(style="whitegrid")
 
 # library('ggplot2') # visualization
 def prep_file(my_file):
@@ -130,6 +127,10 @@ df['date_time'] = pd.to_datetime(df['date_time'], format="%Y-%m-%d %H:%M:%S")
 df['month'] = df['date_time'].apply(lambda x: "%s" %(x.month))
 df['month'] = df['month'].apply(lambda x: calendar.month_abbr[int(x)])
 
+# Create additional column with days of the week
+df['day'] = df['date_time'].apply(lambda x: "%s" %(x.dayofweek))
+df['day'] = df['day'].apply(lambda x: calendar.day_abbr[int(x)])
+print(df.head(5))
 # Group and aggregate the data to get some meaningful insights.
 # Look at total commits per author
 counts = df['author'].value_counts()
@@ -140,17 +141,24 @@ months = df['month'].value_counts()
 # Start by looking at monthly patterns
 # Calculate average monthly commits per author
 monthly_df = pd.DataFrame({'count' : df.groupby(['author', 'month']).size()}).reset_index()
-print(monthly_df)
+# print(monthly_df)
 # author_monthly_avg = monthly_df.groupby(['author']).mean().reset_index(['author', 'mean'])
 author_monthly_avg = monthly_df.groupby(['author']).agg(['mean','std']).reset_index(['author', 'mean'])
-print(author_monthly_avg)
+# print(author_monthly_avg)
 
 # Convert dataframe to csv to do additional stats if required
 author_monthly_avg.to_csv('author_monthly_avg.csv')
 
+daily_df = pd.DataFrame({'count' : df.groupby(['author', 'day']).size()}).reset_index()
+print(daily_df)
+
+# set background style for plots
+sns.set(style="whitegrid")
+
 # Create a grouped bar chart of average monthly commits per author
 plt.figure()
 average_monthly_commits = sns.barplot(x='author', y='count', data=monthly_df, capsize=.2, errwidth = .8)
+# average_monthly_commits.set_xticklabels(visible=True, rotation=45)
 average_monthly_commits.figure.savefig("average_monthly.jpg")
 
 # Create a grouped bar chart of average monthly commits per author
@@ -164,7 +172,21 @@ commits_by_month.figure.savefig("commits_by_month.jpg")
 
 #plt.figure()
 # commits_by_author_by_month = sns.countplot(x='author', hue='month', data=df)
-commits_by_author_by_month = sns.factorplot(x='author', y='count', col = 'month', data=monthly_df, kind='bar')
+commits_by_author_by_month = sns.factorplot(x='month', 
+        y='count', 
+        col = 'author', 
+        col_wrap=3, 
+        data=monthly_df, 
+        kind='bar', 
+        order=['Jul','Aug','Sep', 'Oct','Nov'], 
+        size = 2)
+commits_by_author_by_month.set_xlabels('')
+commits_by_author_by_month.set_ylabels('mean (per month)')
+for ax in commits_by_author_by_month.axes:
+    plt.setp(ax.get_xticklabels(), visible=True, rotation=45)
+
+plt.subplots_adjust(hspace=1)
+
 commits_by_author_by_month.savefig("commits_by_author_by_month.jpg")
 
 # Next look at weekly patterns
