@@ -1,15 +1,9 @@
+# Siobhan Dunphy 10353786
 # CA5 part B - involves modifying your calculator class from CA1 to ensure that it can handle lists of data.
 # You will be required to refactor / rewrite your functions so that they can handle lists.
 # You will need to use lambda, map, filter, reduce and list comprehension in any manner you deem necessary to achieve this.
 
-# class CalculatorList(object):
-#     def __init__(self):
-#         self.numbers=[]
-# 
-#     def add(self, x, y):
-#         x = float(x)
-#         y = float(y)
-#         return x + y
+
 import math
 
 print "Wecome to the list calculator!"
@@ -94,6 +88,7 @@ def logarithm(self,x):
         return 'NaN'
     return log(x,10)
 
+# prompt the user to input a list of numbers then call the appropriate function
 while True:   
     inp = raw_input("Please enter the operation you would like to perform on a list: +, -, /, *, power, square, sin, cos, tan, or log, or type Q to quit!\n")
     if inp.lower() == 'q':
